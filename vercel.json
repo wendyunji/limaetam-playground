@@ -1,0 +1,16 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "functions": {
+    "app/api/**/*.ts": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "env": {
+    "GITHUB_OWNER": "@github_owner",
+    "GITHUB_REPO": "@github_repo", 
+    "GITHUB_TOKEN": "@github_token"
+  }
+}
