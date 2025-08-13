@@ -27,7 +27,7 @@ export class GitManager {
           owner: this.config.owner,
           repo: this.config.repo,
         });
-      } catch (error) {
+      } catch {
         return { 
           success: false, 
           error: 'Repository not found or insufficient permissions' 
@@ -45,7 +45,7 @@ export class GitManager {
         if ('sha' in data) {
           sha = data.sha;
         }
-      } catch (error) {
+      } catch {
         // File doesn't exist, that's ok
       }
 
@@ -73,11 +73,11 @@ export class GitManager {
         commitUrl: result.data.commit.html_url,
         sha: result.data.commit.sha 
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Git commit failed:', error);
       return { 
         success: false, 
-        error: error.message || 'Unknown error occurred' 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
       };
     }
   }
@@ -98,10 +98,10 @@ export class GitManager {
           permissions: data.permissions
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || 'Failed to get repository info'
+        error: error instanceof Error ? error.message : 'Failed to get repository info'
       };
     }
   }
