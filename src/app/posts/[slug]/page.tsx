@@ -4,9 +4,9 @@ import { getPostBySlug, getAllPosts } from '@/lib/posts';
 import { formatDate } from '@/lib/utils';
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -16,11 +16,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function PostPage({ params }: PostPageProps) {
+export default async function PostPage({ params }: PostPageProps) {
+  const { slug } = await params;
   let post;
   
   try {
-    post = getPostBySlug(params.slug);
+    post = getPostBySlug(slug);
   } catch (error) {
     notFound();
   }

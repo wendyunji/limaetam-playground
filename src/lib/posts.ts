@@ -34,16 +34,25 @@ export function getPostBySlug(slug: string): Post {
 export function getAllPosts(): Post[] {
   const slugs = getPostSlugs();
   const posts = slugs
+    .filter(slug => slug.endsWith('.md'))  // .md 파일만 필터링
     .map((slug) => getPostBySlug(slug))
     .sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
   return posts;
 }
 
 export function createPost(metadata: PostMetadata, content: string): string {
-  const slug = metadata.title
+  // 한글을 로마자로 변환하거나 영문 슬러그 생성
+  let slug = metadata.title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .replace(/\s+/g, '-')           // 공백을 하이픈으로
+    .replace(/[^a-z0-9-]/g, '')     // 영문, 숫자, 하이픈만 남기기
+    .replace(/-+/g, '-')            // 연속된 하이픈을 하나로
+    .replace(/(^-|-$)/g, '');       // 시작과 끝의 하이픈 제거
+  
+  // 빈 슬러그 방지 (한글 제목인 경우)
+  if (!slug) {
+    slug = `post-${Date.now()}`;
+  }
   
   const frontMatter = `---
 title: "${metadata.title}"

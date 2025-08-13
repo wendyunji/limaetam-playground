@@ -1,6 +1,4 @@
 import { Octokit } from '@octokit/rest';
-import fs from 'fs';
-import path from 'path';
 
 interface GitConfig {
   owner: string;
@@ -19,11 +17,23 @@ export class GitManager {
     });
   }
 
-  async commitPost(slug: string, title: string) {
+  async commitPost(slug: string, title: string, content: string, author?: string) {
     const filePath = `content/posts/${slug}.md`;
-    const content = fs.readFileSync(path.join(process.cwd(), filePath), 'utf8');
     
     try {
+      // Check if repo exists and user has write access
+      try {
+        await this.octokit.rest.repos.get({
+          owner: this.config.owner,
+          repo: this.config.repo,
+        });
+      } catch (error) {
+        return { 
+          success: false, 
+          error: 'Repository not found or insufficient permissions' 
+        };
+      }
+
       // Get current file SHA if it exists
       let sha: string | undefined;
       try {
@@ -39,20 +49,60 @@ export class GitManager {
         // File doesn't exist, that's ok
       }
 
+      // Create commit message
+      const commitMessage = sha 
+        ? `Update post: ${title}` 
+        : `Add new post: ${title}`;
+
       // Create or update the file
-      await this.octokit.rest.repos.createOrUpdateFileContents({
+      const result = await this.octokit.rest.repos.createOrUpdateFileContents({
         owner: this.config.owner,
         repo: this.config.repo,
         path: filePath,
-        message: `Add post: ${title}`,
+        message: commitMessage,
         content: Buffer.from(content).toString('base64'),
         sha,
+        author: author ? {
+          name: author,
+          email: `${author}@users.noreply.github.com`
+        } : undefined,
       });
 
-      return { success: true };
-    } catch (error) {
+      return { 
+        success: true, 
+        commitUrl: result.data.commit.html_url,
+        sha: result.data.commit.sha 
+      };
+    } catch (error: any) {
       console.error('Git commit failed:', error);
-      return { success: false, error };
+      return { 
+        success: false, 
+        error: error.message || 'Unknown error occurred' 
+      };
+    }
+  }
+
+  async getRepositoryInfo() {
+    try {
+      const { data } = await this.octokit.rest.repos.get({
+        owner: this.config.owner,
+        repo: this.config.repo,
+      });
+      
+      return {
+        success: true,
+        data: {
+          name: data.name,
+          full_name: data.full_name,
+          private: data.private,
+          permissions: data.permissions
+        }
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to get repository info'
+      };
     }
   }
 }
