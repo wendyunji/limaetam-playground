@@ -54,6 +54,7 @@ export default function Navigation() {
                 </Link>
 
                 <div className="flex items-center space-x-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={session.user?.image || ''}
                     alt={session.user?.name || ''}

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface Repository {
@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchRepositories = async () => {
+  const fetchRepositories = useCallback(async () => {
     if (!session?.accessToken) return;
 
     setIsLoading(true);
@@ -52,13 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.accessToken]);
 
   useEffect(() => {
     if (session?.accessToken) {
       fetchRepositories();
     }
-  }, [session?.accessToken]);
+  }, [session?.accessToken, fetchRepositories]);
 
   useEffect(() => {
     if (selectedRepo) {

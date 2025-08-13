@@ -54,9 +54,9 @@ export default function EditorPage() {
       
       // Redirect to home page to see the new post
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to save post:', error);
-      alert(`글 저장에 실패했습니다: ${error.message}`);
+      alert(`글 저장에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 

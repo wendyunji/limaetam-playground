@@ -22,7 +22,7 @@ export default async function PostPage({ params }: PostPageProps) {
   
   try {
     post = getPostBySlug(slug);
-  } catch (error) {
+  } catch {
     notFound();
   }
 
